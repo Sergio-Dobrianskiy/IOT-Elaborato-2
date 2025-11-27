@@ -39,3 +39,29 @@
 
 # debug information files
 *.dwo
+
+# PlatformIO
+.pio/
+.cpio/
+.pioenvs/
+pio.lock
+cmake-build-*/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Arduino cache/temp
+*.eep
+*.elf
+*.bin
+*.hex
+*.map
+
+# Mac/Win files
+.DS_Store
+Thumbs.db
+
+# Logs/temp
+*.log
+*.tmp
