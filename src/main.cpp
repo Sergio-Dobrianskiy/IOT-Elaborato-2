@@ -63,11 +63,11 @@ public:
       this->isOn = false;
       pinMode(pin, OUTPUT);
 }
-    void switchOn() {
+    virtual void switchOn() override {
         digitalWrite(pin, HIGH);
         isOn = true;
 }
-    void switchOff() {
+    virtual void switchOff() override {
         digitalWrite(pin, LOW);
         isOn = false;
 }
@@ -75,12 +75,15 @@ protected: // ci possono accedere solo i figli
     int pin;
     bool isOn;
 };
+
+
+
 class ButtonImpl: public Button {
 public:
     ButtonImpl(int pin) : pin(pin) {
     pinMode(pin, INPUT);
 }
-    bool isPressed(){
+    virtual bool isPressed() override {
         return digitalRead(pin) == HIGH;
 }
 protected:
