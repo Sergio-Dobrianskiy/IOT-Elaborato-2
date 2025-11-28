@@ -6,12 +6,23 @@
 
 /************** PROTOTIPI **************/
 // TODO Andrà nel .h
-class Light {
+class Led {
 public: // pubblico, tutti possono accedere ai metodi
     virtual void switchOn() = 0; // virtual permette override
     virtual void switchOff() = 0; // vuol dire astratto
 };
 
+class Button {
+public:
+    virtual bool isPressed() = 0;
+};
+
+
+class Thermometer {
+public:
+    virtual float getTempC() = 0;
+    virtual void printC(float temp) = 0;
+};
 
 
 /************** DEFINE **************/
@@ -41,38 +52,90 @@ Servo myservo;
 float duration_us, distance_cm;
 
 // TODO Andrà nel .h
-class Led : public Light {
+class LedImpl : public Led {
 public:
-    Led(int pin);
+    LedImpl(int pin);
     void switchOn();
     void switchOff();
 protected: // ci possono accedere solo i figli
     int pin;
     bool isOn;
 };
+class ButtonImpl: public Button {
+public:
+    ButtonImpl(int pin);
+    bool isPressed();
+protected:
+    int pin;
+};
 
-Led::Led(int pin) {
+class ThermometerImpl: Thermometer {
+public:
+    ThermometerImpl(uint8_t pin) : pin(pin) {
+        pinMode(pin, INPUT);
+    }
+    // Restituisce temperatura in C
+    virtual float getTempC() override {
+    // Override: Dice al compilatore: "Questo metodo deve sovrascrivere esattamente uno virtuale dalla base"
+        return (read() * 5.0 / 1024.0) * 100.0;  // Formula di esempio
+    }
+
+    // Printa temperatura in C su seriale.
+    virtual void printC(float temp) override {
+        Serial.print("Temp: ");
+        Serial.println(temp);
+    }
+protected:
+    uint8_t pin; // salvato da : pin(pin), equivale a this->pin = pin;
+    // uint8_t evita di dover usare unsigned long long a causa del define A0
+    
+    // legge valore dal sensore
+    int read(){
+        return analogRead(pin);                // valore 0-1023
+    }
+};
+
+
+LedImpl::LedImpl(int pin) {
     this->pin = pin;
     this->isOn = false;
     pinMode(pin, OUTPUT);
 }
 
-void Led::switchOn() {
+ButtonImpl::ButtonImpl(int pin){
+    this->pin = pin;
+    pinMode(pin, INPUT);
+}
+
+bool ButtonImpl::isPressed(){
+    return digitalRead(pin) == HIGH;
+}
+
+
+
+
+
+void LedImpl::switchOn() {
     // :: scope resolution operator, specifica che 
     // il metodo switchOn appartiene alla classe led
     digitalWrite(pin, HIGH);
     isOn = true;
 }
 
-void Led::switchOff() {
+void LedImpl::switchOff() {
     digitalWrite(pin, LOW);
     isOn = false;
 }
 
 
-Led* redLed;
-Led* greenLed1;
-Led* greenLed2;
+LedImpl* redLed;
+LedImpl* greenLed1;
+LedImpl* greenLed2;
+
+ThermometerImpl* thermometer;
+
+
+
 
 /************** SETUP **************/
 void setup() {
@@ -84,14 +147,16 @@ void setup() {
   pinMode(PIR,INPUT);
   // pinMode(LR,OUTPUT);
 
-  redLed = new Led(LR);
-  greenLed1 = new Led(LG1);
-  greenLed1 = new Led(LG2);
+  redLed = new LedImpl(LR);
+  greenLed1 = new LedImpl(LG1);
+  greenLed1 = new LedImpl(LG2);
+
+  thermometer = new ThermometerImpl(TEMP);
 
   myservo.attach(SERVO);
   pinMode(TRIG, OUTPUT); 
   pinMode(ECHO, INPUT);
-  pinMode(TEMP, INPUT);
+
 
 }
 
@@ -125,22 +190,9 @@ void loop() {
 
   delay(500);
   
-  int tread = analogRead(TEMP);                // valore 0-1023
-  float voltage = tread * (5.0 / 1023.0);      // in volt
-  float tempC = (voltage - 0.5) * 100.0;       // formula TMP36
+  float tempC = thermometer->getTempC();
+  thermometer->printC(tempC);
 
-  Serial.print("raw: ");
-  Serial.print(tread);
-  Serial.print(" | V: ");
-  Serial.print(voltage, 3);   // 3 decimali
-  Serial.print(" V | Temp: ");
-  Serial.print(tempC, 2);     // 2 decimali
-
-  // opzione per stampare il simbolo grado (se vuoi provarlo)
-  // Serial.print(" "); Serial.write(176); Serial.println("C");
-
-  // oppure più sicuro (compatibilità): niente simbolo grado
-  Serial.println(" C");
   
   lcd.setCursor(0, 0);
   lcd.print("Hello World!");
