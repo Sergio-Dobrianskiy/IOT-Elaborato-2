@@ -72,12 +72,13 @@ protected:
 class ThermometerImpl: Thermometer {
 public:
     ThermometerImpl(uint8_t pin) : pin(pin) {
-        pinMode(pin, INPUT);
+        pinMode(pin, INPUT); // Inizializza pin analogico
     }
     // Restituisce temperatura in C
     virtual float getTempC() override {
     // Override: Dice al compilatore: "Questo metodo deve sovrascrivere esattamente uno virtuale dalla base"
-        return (read() * 5.0 / 1024.0) * 100.0;  // Formula di esempio
+        float voltage = read() * 5.0 / 1024.0;
+        return (voltage - 0.5) * 100.0;  // Formula per TMP36
     }
 
     // Printa temperatura in C su seriale.
