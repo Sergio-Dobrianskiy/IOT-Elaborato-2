@@ -54,17 +54,30 @@ float duration_us, distance_cm;
 // TODO Andrà nel .h
 class LedImpl : public Led {
 public:
-    LedImpl(int pin);
-    void switchOn();
-    void switchOff();
+    LedImpl(int pin) : pin(pin) {
+      this->isOn = false;
+      pinMode(pin, OUTPUT);
+}
+    void switchOn() {
+        digitalWrite(pin, HIGH);
+        isOn = true;
+}
+    void switchOff() {
+        digitalWrite(pin, LOW);
+        isOn = false;
+}
 protected: // ci possono accedere solo i figli
     int pin;
     bool isOn;
 };
 class ButtonImpl: public Button {
 public:
-    ButtonImpl(int pin);
-    bool isPressed();
+    ButtonImpl(int pin) : pin(pin) {
+    pinMode(pin, INPUT);
+}
+    bool isPressed(){
+        return digitalRead(pin) == HIGH;
+}
 protected:
     int pin;
 };
@@ -95,38 +108,6 @@ protected:
         return analogRead(pin);                // valore 0-1023
     }
 };
-
-
-LedImpl::LedImpl(int pin) {
-    this->pin = pin;
-    this->isOn = false;
-    pinMode(pin, OUTPUT);
-}
-
-ButtonImpl::ButtonImpl(int pin){
-    this->pin = pin;
-    pinMode(pin, INPUT);
-}
-
-bool ButtonImpl::isPressed(){
-    return digitalRead(pin) == HIGH;
-}
-
-
-
-
-
-void LedImpl::switchOn() {
-    // :: scope resolution operator, specifica che 
-    // il metodo switchOn appartiene alla classe led
-    digitalWrite(pin, HIGH);
-    isOn = true;
-}
-
-void LedImpl::switchOff() {
-    digitalWrite(pin, LOW);
-    isOn = false;
-}
 
 
 LedImpl* redLed;
