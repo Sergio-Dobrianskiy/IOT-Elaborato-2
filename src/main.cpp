@@ -24,6 +24,12 @@ public:
     virtual void printC(float temp) = 0;
 };
 
+class Ultrasonic {
+public:
+    virtual float getDistanceCm() = 0;
+    virtual void printDistance(float distance) = 0;
+};
+
 
 /************** DEFINE **************/
 
@@ -49,7 +55,6 @@ public:
 /************** GLOBALI **************/
 LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 Servo myservo;
-float duration_us, distance_cm;
 
 // TODO Andrà nel .h
 class LedImpl : public Led {
@@ -97,7 +102,9 @@ public:
     // Printa temperatura in C su seriale.
     virtual void printC(float temp) override {
         Serial.print("Temp: ");
-        Serial.println(temp);
+        Serial.print(temp);
+        Serial.write(176); 
+        Serial.println("C");
     }
 protected:
     uint8_t pin; // salvato da : pin(pin), equivale a this->pin = pin;
@@ -109,6 +116,32 @@ protected:
     }
 };
 
+class UltrasonicImpl: Ultrasonic {
+public:
+    UltrasonicImpl(uint8_t trigPin, uint8_t echoPin) : trigPin(trigPin), echoPin(echoPin) {
+        pinMode(trigPin, OUTPUT); // Inizializza pin analogico
+        pinMode(echoPin, INPUT); // Inizializza pin analogico
+    }
+
+    virtual float getDistanceCm() override {
+      digitalWrite(trigPin, HIGH);
+      delayMicroseconds(10);
+      digitalWrite(trigPin, LOW);
+      float duration_us = pulseIn(echoPin, HIGH);
+      return 0.017 * duration_us;
+
+    };
+    virtual void printDistance(float distance) override {
+        Serial.print("Distance: ");
+        Serial.print(distance);
+        Serial.println(" cm");
+    };
+
+protected:
+    uint8_t trigPin;
+    uint8_t echoPin;
+};
+
 
 LedImpl* redLed;
 LedImpl* greenLed1;
@@ -116,9 +149,9 @@ LedImpl* greenLed2;
 
 ThermometerImpl* thermometer;
 
+UltrasonicImpl* ultrasonic;
 
-
-
+float distance_cm;
 /************** SETUP **************/
 void setup() {
   Serial.begin(9600);
@@ -135,9 +168,10 @@ void setup() {
 
   thermometer = new ThermometerImpl(TEMP);
 
+  ultrasonic = new UltrasonicImpl(TRIG, ECHO);
+
   myservo.attach(SERVO);
-  pinMode(TRIG, OUTPUT); 
-  pinMode(ECHO, INPUT);
+  
 
 
 }
@@ -153,22 +187,18 @@ void loop() {
     redLed->switchOff();
     myservo.write(0);
   }
-    
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-  duration_us = pulseIn(ECHO, HIGH);
-  distance_cm = 0.017 * duration_us;
+  
+
+  
+
+  distance_cm = ultrasonic->getDistanceCm();
 
   if(distance_cm < DISTANCE_THRESHOLD)
     greenLed1->switchOn();
   else
     greenLed1->switchOff();
 
-  // print the value to Serial Monitor
-  Serial.print("distance: ");
-  Serial.print(distance_cm);
-  Serial.println(" cm");
+  ultrasonic->printDistance(distance_cm);
 
   delay(500);
   
