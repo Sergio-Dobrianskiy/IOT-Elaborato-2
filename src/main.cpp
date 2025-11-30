@@ -3,19 +3,13 @@
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>
 #include "devices/led/led.h"
+#include "devices/button/buttonImpl.h"
 
 /************** PROTOTIPI **************/
 
-class Button
-{
+class Thermometer {
 public:
-    virtual bool isPressed() = 0;
-};
-
-class Thermometer
-{
-public:
-    virtual float getTempC() = 0;
+    virtual float getTemperatureC() = 0;
     virtual void printC(float temp) = 0;
 };
 
@@ -51,21 +45,6 @@ LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 Servo myservo;
 
 
-class ButtonImpl : public Button
-{
-public:
-    ButtonImpl(int pin) : pin(pin)
-    {
-        pinMode(pin, INPUT);
-    }
-    virtual bool isPressed() override
-    {
-        return digitalRead(pin) == HIGH;
-    }
-
-protected:
-    int pin;
-};
 
 class ThermometerImpl : Thermometer
 {
@@ -75,7 +54,7 @@ public:
         pinMode(pin, INPUT); // Inizializza pin analogico
     }
     // Restituisce temperatura in C
-    virtual float getTempC() override
+    virtual float getTemperatureC() override
     {
         // Override: Dice al compilatore: "Questo metodo deve sovrascrivere esattamente uno virtuale dalla base"
         float voltage = read() * 5.0 / 1024.0;
@@ -189,7 +168,7 @@ void loop()
 
     delay(500);
 
-    float tempC = thermometer->getTempC();
+    float tempC = thermometer->getTemperatureC();
     thermometer->printC(tempC);
 
     // lcd.setCursor(0, 0);
