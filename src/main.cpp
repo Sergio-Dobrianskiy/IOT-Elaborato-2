@@ -2,15 +2,9 @@
 
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>
+#include "devices/led/led.h"
 
 /************** PROTOTIPI **************/
-// TODO Andrà nel .h
-class Led
-{
-public:                           // pubblico, tutti possono accedere ai metodi
-    virtual void switchOn() = 0;  // virtual permette override
-    virtual void switchOff() = 0; // vuol dire astratto
-};
 
 class Button
 {
@@ -56,30 +50,6 @@ public:
 LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 Servo myservo;
 
-// TODO Andrà nel .h
-class LedImpl : public Led
-{
-public:
-    LedImpl(int pin) : pin(pin)
-    {
-        this->isOn = false;
-        pinMode(pin, OUTPUT);
-    }
-    virtual void switchOn() override
-    {
-        digitalWrite(pin, HIGH);
-        isOn = true;
-    }
-    virtual void switchOff() override
-    {
-        digitalWrite(pin, LOW);
-        isOn = false;
-    }
-
-protected: // ci possono accedere solo i figli
-    int pin;
-    bool isOn;
-};
 
 class ButtonImpl : public Button
 {
@@ -161,9 +131,9 @@ protected:
     uint8_t echoPin;
 };
 
-LedImpl *redLed;
-LedImpl *greenLed1;
-LedImpl *greenLed2;
+Led *redLed;
+Led *greenLed1;
+Led *greenLed2;
 
 ThermometerImpl *thermometer;
 
@@ -181,9 +151,9 @@ void setup()
     pinMode(PIR, INPUT);
     // pinMode(LR,OUTPUT);
 
-    redLed = new LedImpl(LR);
-    greenLed1 = new LedImpl(LG1);
-    greenLed1 = new LedImpl(LG2);
+    redLed = new Led(LR);
+    greenLed1 = new Led(LG1);
+    greenLed1 = new Led(LG2);
 
     thermometer = new ThermometerImpl(TEMP);
 
