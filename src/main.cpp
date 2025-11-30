@@ -6,16 +6,8 @@
 #include "devices/button/buttonImpl.h"
 //#include "devices/thermometer/thermometerDHT11.h"
 #include "devices/thermometer/thermometerTMP36.h"
+#include "devices/proxymitySensor/sonar.h"
 
-/************** PROTOTIPI **************/
-
-
-class Ultrasonic
-{
-public:
-    virtual float getDistanceCm() = 0;
-    virtual void printDistance(float distance) = 0;
-};
 
 /************** DEFINE **************/
 
@@ -41,35 +33,6 @@ public:
 LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 Servo myservo;
 
-class UltrasonicImpl : Ultrasonic
-{
-public:
-    UltrasonicImpl(uint8_t trigPin, uint8_t echoPin) : trigPin(trigPin), echoPin(echoPin)
-    {
-        pinMode(trigPin, OUTPUT); // Inizializza pin analogico
-        pinMode(echoPin, INPUT);  // Inizializza pin analogico
-    }
-
-    virtual float getDistanceCm() override
-    {
-        digitalWrite(trigPin, HIGH);
-        delayMicroseconds(10);
-        digitalWrite(trigPin, LOW);
-        float duration_us = pulseIn(echoPin, HIGH);
-        return 0.017 * duration_us;
-    };
-    virtual void printDistance(float distance) override
-    {
-        Serial.print("Distance: ");
-        Serial.print(distance);
-        Serial.println(" cm");
-    };
-
-protected:
-    uint8_t trigPin;
-    uint8_t echoPin;
-};
-
 Led *redLed;
 Led *greenLed1;
 Led *greenLed2;
@@ -77,7 +40,7 @@ Led *greenLed2;
 // ThermometerDHT11 *thermometer;
 ThermometerTMP36 *thermometer;
 
-UltrasonicImpl *ultrasonic;
+Sonar *ultrasonic;
 
 float distance_cm;
 /************** SETUP **************/
@@ -97,7 +60,7 @@ void setup()
 
     thermometer = new ThermometerTMP36(TEMP);
 
-    ultrasonic = new UltrasonicImpl(TRIG, ECHO);
+    ultrasonic = new Sonar(TRIG, ECHO);
 
     myservo.attach(SERVO);
 }
