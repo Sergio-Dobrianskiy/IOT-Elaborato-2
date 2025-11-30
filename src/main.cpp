@@ -4,14 +4,11 @@
 #include <Servo.h>
 #include "devices/led/led.h"
 #include "devices/button/buttonImpl.h"
+//#include "devices/thermometer/thermometerDHT11.h"
+#include "devices/thermometer/thermometerTMP36.h"
 
 /************** PROTOTIPI **************/
 
-class Thermometer {
-public:
-    virtual float getTemperatureC() = 0;
-    virtual void printC(float temp) = 0;
-};
 
 class Ultrasonic
 {
@@ -43,43 +40,6 @@ public:
 /************** GLOBALI **************/
 LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 Servo myservo;
-
-
-
-class ThermometerImpl : Thermometer
-{
-public:
-    ThermometerImpl(uint8_t pin) : pin(pin)
-    {
-        pinMode(pin, INPUT); // Inizializza pin analogico
-    }
-    // Restituisce temperatura in C
-    virtual float getTemperatureC() override
-    {
-        // Override: Dice al compilatore: "Questo metodo deve sovrascrivere esattamente uno virtuale dalla base"
-        float voltage = read() * 5.0 / 1024.0;
-        return (voltage - 0.5) * 100.0; // Formula per TMP36
-    }
-
-    // Printa temperatura in C su seriale.
-    virtual void printC(float temp) override
-    {
-        Serial.print("Temp: ");
-        Serial.print(temp);
-        Serial.write(176);
-        Serial.println("C");
-    }
-
-protected:
-    uint8_t pin; // salvato da : pin(pin), equivale a this->pin = pin;
-    // uint8_t evita di dover usare unsigned long long a causa del define A0
-
-    // legge valore dal sensore
-    int read()
-    {
-        return analogRead(pin); // valore 0-1023
-    }
-};
 
 class UltrasonicImpl : Ultrasonic
 {
@@ -114,7 +74,8 @@ Led *redLed;
 Led *greenLed1;
 Led *greenLed2;
 
-ThermometerImpl *thermometer;
+// ThermometerDHT11 *thermometer;
+ThermometerTMP36 *thermometer;
 
 UltrasonicImpl *ultrasonic;
 
@@ -134,7 +95,7 @@ void setup()
     greenLed1 = new Led(LG1);
     greenLed1 = new Led(LG2);
 
-    thermometer = new ThermometerImpl(TEMP);
+    thermometer = new ThermometerTMP36(TEMP);
 
     ultrasonic = new UltrasonicImpl(TRIG, ECHO);
 
