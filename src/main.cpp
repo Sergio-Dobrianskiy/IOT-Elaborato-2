@@ -3,33 +3,34 @@
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>
 
-
 /************** PROTOTIPI **************/
 // TODO Andrà nel .h
-class Led {
-public: // pubblico, tutti possono accedere ai metodi
-    virtual void switchOn() = 0; // virtual permette override
+class Led
+{
+public:                           // pubblico, tutti possono accedere ai metodi
+    virtual void switchOn() = 0;  // virtual permette override
     virtual void switchOff() = 0; // vuol dire astratto
 };
 
-class Button {
+class Button
+{
 public:
     virtual bool isPressed() = 0;
 };
 
-
-class Thermometer {
+class Thermometer
+{
 public:
     virtual float getTempC() = 0;
     virtual void printC(float temp) = 0;
 };
 
-class Ultrasonic {
+class Ultrasonic
+{
 public:
     virtual float getDistanceCm() = 0;
     virtual void printDistance(float distance) = 0;
 };
-
 
 /************** DEFINE **************/
 
@@ -41,7 +42,7 @@ public:
 
 #define BTN1 5
 
-#define PIR 4
+#define PIR 11
 #define SERVO 3
 
 #define TRIG 8
@@ -51,90 +52,105 @@ public:
 
 #define TEMP A0
 
-
 /************** GLOBALI **************/
 LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 Servo myservo;
 
 // TODO Andrà nel .h
-class LedImpl : public Led {
+class LedImpl : public Led
+{
 public:
-    LedImpl(int pin) : pin(pin) {
-      this->isOn = false;
-      pinMode(pin, OUTPUT);
-}
-    virtual void switchOn() override {
+    LedImpl(int pin) : pin(pin)
+    {
+        this->isOn = false;
+        pinMode(pin, OUTPUT);
+    }
+    virtual void switchOn() override
+    {
         digitalWrite(pin, HIGH);
         isOn = true;
-}
-    virtual void switchOff() override {
+    }
+    virtual void switchOff() override
+    {
         digitalWrite(pin, LOW);
         isOn = false;
-}
+    }
+
 protected: // ci possono accedere solo i figli
     int pin;
     bool isOn;
 };
 
-
-
-class ButtonImpl: public Button {
+class ButtonImpl : public Button
+{
 public:
-    ButtonImpl(int pin) : pin(pin) {
-    pinMode(pin, INPUT);
-}
-    virtual bool isPressed() override {
+    ButtonImpl(int pin) : pin(pin)
+    {
+        pinMode(pin, INPUT);
+    }
+    virtual bool isPressed() override
+    {
         return digitalRead(pin) == HIGH;
-}
+    }
+
 protected:
     int pin;
 };
 
-class ThermometerImpl: Thermometer {
+class ThermometerImpl : Thermometer
+{
 public:
-    ThermometerImpl(uint8_t pin) : pin(pin) {
+    ThermometerImpl(uint8_t pin) : pin(pin)
+    {
         pinMode(pin, INPUT); // Inizializza pin analogico
     }
     // Restituisce temperatura in C
-    virtual float getTempC() override {
-    // Override: Dice al compilatore: "Questo metodo deve sovrascrivere esattamente uno virtuale dalla base"
+    virtual float getTempC() override
+    {
+        // Override: Dice al compilatore: "Questo metodo deve sovrascrivere esattamente uno virtuale dalla base"
         float voltage = read() * 5.0 / 1024.0;
-        return (voltage - 0.5) * 100.0;  // Formula per TMP36
+        return (voltage - 0.5) * 100.0; // Formula per TMP36
     }
 
     // Printa temperatura in C su seriale.
-    virtual void printC(float temp) override {
+    virtual void printC(float temp) override
+    {
         Serial.print("Temp: ");
         Serial.print(temp);
-        Serial.write(176); 
+        Serial.write(176);
         Serial.println("C");
     }
+
 protected:
     uint8_t pin; // salvato da : pin(pin), equivale a this->pin = pin;
     // uint8_t evita di dover usare unsigned long long a causa del define A0
-    
+
     // legge valore dal sensore
-    int read(){
-        return analogRead(pin);                // valore 0-1023
+    int read()
+    {
+        return analogRead(pin); // valore 0-1023
     }
 };
 
-class UltrasonicImpl: Ultrasonic {
+class UltrasonicImpl : Ultrasonic
+{
 public:
-    UltrasonicImpl(uint8_t trigPin, uint8_t echoPin) : trigPin(trigPin), echoPin(echoPin) {
+    UltrasonicImpl(uint8_t trigPin, uint8_t echoPin) : trigPin(trigPin), echoPin(echoPin)
+    {
         pinMode(trigPin, OUTPUT); // Inizializza pin analogico
-        pinMode(echoPin, INPUT); // Inizializza pin analogico
+        pinMode(echoPin, INPUT);  // Inizializza pin analogico
     }
 
-    virtual float getDistanceCm() override {
-      digitalWrite(trigPin, HIGH);
-      delayMicroseconds(10);
-      digitalWrite(trigPin, LOW);
-      float duration_us = pulseIn(echoPin, HIGH);
-      return 0.017 * duration_us;
-
+    virtual float getDistanceCm() override
+    {
+        digitalWrite(trigPin, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(trigPin, LOW);
+        float duration_us = pulseIn(echoPin, HIGH);
+        return 0.017 * duration_us;
     };
-    virtual void printDistance(float distance) override {
+    virtual void printDistance(float distance) override
+    {
         Serial.print("Distance: ");
         Serial.print(distance);
         Serial.println(" cm");
@@ -145,73 +161,67 @@ protected:
     uint8_t echoPin;
 };
 
+LedImpl *redLed;
+LedImpl *greenLed1;
+LedImpl *greenLed2;
 
-LedImpl* redLed;
-LedImpl* greenLed1;
-LedImpl* greenLed2;
+ThermometerImpl *thermometer;
 
-ThermometerImpl* thermometer;
-
-UltrasonicImpl* ultrasonic;
+UltrasonicImpl *ultrasonic;
 
 float distance_cm;
 /************** SETUP **************/
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+    Serial.begin(9600);
+    Serial.println("0");
+    // lcd.init();
+    // lcd.backlight();
 
-  lcd.init();
-  lcd.backlight();
-  
-  pinMode(PIR,INPUT);
-  // pinMode(LR,OUTPUT);
+    pinMode(PIR, INPUT);
+    // pinMode(LR,OUTPUT);
 
-  redLed = new LedImpl(LR);
-  greenLed1 = new LedImpl(LG1);
-  greenLed1 = new LedImpl(LG2);
+    redLed = new LedImpl(LR);
+    greenLed1 = new LedImpl(LG1);
+    greenLed1 = new LedImpl(LG2);
 
-  thermometer = new ThermometerImpl(TEMP);
+    thermometer = new ThermometerImpl(TEMP);
 
-  ultrasonic = new UltrasonicImpl(TRIG, ECHO);
+    ultrasonic = new UltrasonicImpl(TRIG, ECHO);
 
-  myservo.attach(SERVO);
-  
-
-
+    myservo.attach(SERVO);
 }
 
 /************** LOOP **************/
-void loop() {
-  int val = digitalRead(PIR);
-  Serial.println(val);
-  if(val==HIGH){
-    redLed->switchOn();
-    myservo.write(150);
-  } else{
-    redLed->switchOff();
-    myservo.write(0);
-  }
-  
+void loop()
+{
+    int val = digitalRead(PIR);
+    Serial.println(val);
+    if (val == HIGH)
+    {
+        redLed->switchOn();
+        myservo.write(150);
+    }
+    else
+    {
+        redLed->switchOff();
+        myservo.write(0);
+    }
 
-  
+    distance_cm = ultrasonic->getDistanceCm();
 
-  distance_cm = ultrasonic->getDistanceCm();
+    if (distance_cm < DISTANCE_THRESHOLD)
+        greenLed1->switchOn();
+    else
+        greenLed1->switchOff();
 
-  if(distance_cm < DISTANCE_THRESHOLD)
-    greenLed1->switchOn();
-  else
-    greenLed1->switchOff();
+    ultrasonic->printDistance(distance_cm);
 
-  ultrasonic->printDistance(distance_cm);
+    delay(500);
 
-  delay(500);
-  
-  float tempC = thermometer->getTempC();
-  thermometer->printC(tempC);
+    float tempC = thermometer->getTempC();
+    thermometer->printC(tempC);
 
-  
-  lcd.setCursor(0, 0);
-  lcd.print("Hello World!");
-  
-  
+    // lcd.setCursor(0, 0);
+    // lcd.print("Hello World!");
 }
-
