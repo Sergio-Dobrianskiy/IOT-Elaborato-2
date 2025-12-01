@@ -1,5 +1,5 @@
-#ifndef __LIGHT__
-#define __LIGHT__
+#ifndef __PROXIMITY_SENSOR__
+#define __PROXIMITY_SENSOR__
 
 class ProximitySensor {
 public:

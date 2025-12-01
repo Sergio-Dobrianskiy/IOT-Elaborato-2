@@ -1,9 +1,19 @@
-#ifndef __SERVO_MOTOR__
-#define __SERVO_MOTOR__
+#ifndef __SERVO_MOTOR_IMPL__
+#define __SERVO_MOTOR_IMPL__
 
-class ServoMotor {
+#include "Arduino.h"
+#include "servoMotor.h"
+#include <Servo.h>
+
+class ServoMotorImpl : public ServoMotor {
 public:
-    virtual void setAngle(int angle) = 0;
+    ServoMotorImpl(uint8_t pin);
+    virtual void setAngle(int angle) override;
+
+protected:  
+    uint8_t pin;
+    Servo myservo;
 };
+
 
 #endif
