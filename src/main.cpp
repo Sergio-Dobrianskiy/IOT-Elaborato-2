@@ -2,8 +2,6 @@
 
 #include "config.h"
 
-#include <LiquidCrystal_I2C.h>
-#include <Servo.h>
 #include "devices/button/buttonImpl.h"
 #include "devices/lcd/lcd.h"
 #include "devices/led/led.h"
