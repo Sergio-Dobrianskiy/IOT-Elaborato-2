@@ -9,10 +9,12 @@ class ServoMotorImpl : public ServoMotor {
 public:
     ServoMotorImpl(uint8_t pin);
     virtual void setAngle(int angle) override;
+    virtual int getAngle() override;
 
 protected:  
     uint8_t pin;
     Servo myservo;
+    int angle;
 };
 
 

@@ -2,11 +2,13 @@
 
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>
-#include "devices/led/led.h"
 #include "devices/button/buttonImpl.h"
+#include "devices/led/led.h"
+#include "devices/pir/pir.h"
+#include "devices/proxymitySensor/sonar.h"
+#include "devices/servoMotor/servoMotorImpl.h"
 //#include "devices/thermometer/thermometerDHT11.h"
 #include "devices/thermometer/thermometerTMP36.h"
-#include "devices/proxymitySensor/sonar.h"
 
 
 /************** DEFINE **************/
@@ -31,28 +33,29 @@
 
 /************** GLOBALI **************/
 LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
-Servo myservo;
+
+ServoMotorImpl *myservo;
 
 Led *redLed;
 Led *greenLed1;
 Led *greenLed2;
 
-// ThermometerDHT11 *thermometer;
-ThermometerTMP36 *thermometer;
+Pir *pir;
 
 Sonar *ultrasonic;
 
+// ThermometerDHT11 *thermometer;
+ThermometerTMP36 *thermometer;
+
+
 float distance_cm;
 /************** SETUP **************/
-void setup()
-{
+void setup() {
     Serial.begin(9600);
     Serial.println("0");
     // lcd.init();
     // lcd.backlight();
-
-    pinMode(PIR, INPUT);
-    // pinMode(LR,OUTPUT);
+    pir = new Pir(PIR);
 
     redLed = new Led(LR);
     greenLed1 = new Led(LG1);
@@ -62,31 +65,28 @@ void setup()
 
     ultrasonic = new Sonar(TRIG, ECHO);
 
-    myservo.attach(SERVO);
+    myservo = new ServoMotorImpl(SERVO);
 }
 
 /************** LOOP **************/
-void loop()
-{
-    int val = digitalRead(PIR);
-    Serial.println(val);
-    if (val == HIGH)
-    {
+void loop() {
+    int val = pir->isPresent();
+
+    if (val) {
         redLed->switchOn();
-        myservo.write(150);
-    }
-    else
-    {
+        myservo->setAngle(150);
+    } else {
         redLed->switchOff();
-        myservo.write(0);
+        myservo->setAngle(0);
     }
 
     distance_cm = ultrasonic->getDistanceCm();
 
-    if (distance_cm < DISTANCE_THRESHOLD)
+    if (distance_cm < DISTANCE_THRESHOLD) {
         greenLed1->switchOn();
-    else
+    } else {
         greenLed1->switchOff();
+    }
 
     ultrasonic->printDistance(distance_cm);
 

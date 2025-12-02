@@ -7,4 +7,9 @@ ServoMotorImpl::ServoMotorImpl(uint8_t pin) : pin(pin), myservo(myservo) {
 
 void ServoMotorImpl::setAngle(int angle) {
     myservo.write(angle);
+    this->angle = angle;
+}
+
+int ServoMotorImpl::getAngle() {
+    return angle;
 }
