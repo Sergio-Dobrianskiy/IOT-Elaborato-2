@@ -3,6 +3,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>
 #include "devices/button/buttonImpl.h"
+#include "devices/lcd/lcd.h"
 #include "devices/led/led.h"
 #include "devices/pir/pir.h"
 #include "devices/proxymitySensor/sonar.h"
@@ -32,9 +33,11 @@
 #define TEMP A0
 
 /************** GLOBALI **************/
-LiquidCrystal_I2C lcd(0x27, LCD_LEN, 2);
 
 ServoMotorImpl *myservo;
+
+
+Lcd *lcd;
 
 Led *redLed;
 Led *greenLed1;
@@ -53,8 +56,10 @@ float distance_cm;
 void setup() {
     Serial.begin(9600);
     Serial.println("0");
-    // lcd.init();
-    // lcd.backlight();
+
+    lcd = new Lcd(0x27, LCD_LEN, 2);
+
+    lcd->switchOn();
     pir = new Pir(PIR);
 
     redLed = new Led(LR);
@@ -95,6 +100,5 @@ void loop() {
     float tempC = thermometer->getTemperatureC();
     thermometer->printC(tempC);
 
-    // lcd.setCursor(0, 0);
-    // lcd.print("Hello World!");
+    lcd->show("Riga1", "Riga2");
 }
