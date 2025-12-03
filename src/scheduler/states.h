@@ -16,6 +16,7 @@ enum class DroneState {
 
 enum class TestState {
     NO_TEST = 1,
+    FULL_TEST,
     BUTTON_TEST,
     LCD_TEST,
     LED_TEST,
