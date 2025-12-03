@@ -11,9 +11,14 @@
 //#include "devices/thermometer/thermometerDHT11.h"
 #include "devices/thermometer/thermometerTMP36.h"
 
+#include "states.h"
 
 
 /************** GLOBALI **************/
+
+HangarState hangarState;
+DroneState droneState;
+TestState testState;
 
 ServoMotorImpl *myservo;
 
@@ -32,9 +37,16 @@ Sonar *ultrasonic;
 ThermometerTMP36 *thermometer;
 
 
+
+
 float distance_cm;
 /************** SETUP **************/
 void setup() {
+    hangarState = HangarState::NORMAL;
+    droneState = DroneState::REST;
+    testState = TestState::FULL_TEST;
+
+
     Serial.begin(9600);
     Serial.println("0");
 
@@ -56,30 +68,41 @@ void setup() {
 
 /************** LOOP **************/
 void loop() {
-    int val = pir->isPresent();
+    switch (testState) { // TODO rifare
+    case TestState::FULL_TEST:
+        int val = pir->isPresent();
 
-    if (val) {
-        redLed->switchOn();
-        myservo->setAngle(150);
-    } else {
-        redLed->switchOff();
-        myservo->setAngle(0);
+        if (val) {
+            redLed->switchOn();
+            myservo->setAngle(150);
+        } else {
+            redLed->switchOff();
+            myservo->setAngle(0);
+        }
+
+        distance_cm = ultrasonic->getDistanceCm();
+
+        if (distance_cm < DISTANCE_THRESHOLD) {
+            greenLed1->switchOn();
+        } else {
+            greenLed1->switchOff();
+        }
+
+        ultrasonic->printDistance(distance_cm);
+
+        delay(500);
+
+        float tempC = thermometer->getTemperatureC();
+        thermometer->printC(tempC);
+
+        lcd->show("Riga1", "Riga2");
+        break;
+    
+    case TestState::NO_TEST:
+        break;
+    
+    default:
+        break;
     }
 
-    distance_cm = ultrasonic->getDistanceCm();
-
-    if (distance_cm < DISTANCE_THRESHOLD) {
-        greenLed1->switchOn();
-    } else {
-        greenLed1->switchOff();
-    }
-
-    ultrasonic->printDistance(distance_cm);
-
-    delay(500);
-
-    float tempC = thermometer->getTemperatureC();
-    thermometer->printC(tempC);
-
-    lcd->show("Riga1", "Riga2");
 }
