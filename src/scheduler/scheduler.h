@@ -13,7 +13,7 @@ class Scheduler {
     unsigned long lastRun;
 
 public:
-    Scheduler(int basePeriod);  
+    Scheduler(unsigned long basePeriod);  
     virtual bool addTask(Task* task);  
     virtual void schedule();
 };

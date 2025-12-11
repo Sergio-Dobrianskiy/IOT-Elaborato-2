@@ -20,5 +20,6 @@
 
 #define DISTANCE_THRESHOLD 100
 
+#define TICK_TIME 100
 
 #endif

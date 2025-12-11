@@ -1,17 +1,8 @@
 #include <Arduino.h>
-
-#include "config.h"
-
-#include "devices/button/buttonImpl.h"
-#include "devices/lcd/lcd.h"
-#include "devices/led/led.h"
-#include "devices/pir/pir.h"
-#include "devices/proxymitySensor/sonar.h"
-#include "devices/servoMotor/servoMotorImpl.h"
-//#include "devices/thermometer/thermometerDHT11.h"
-#include "devices/thermometer/thermometerTMP36.h"
-
 #include "scheduler/states.h"
+#include "scheduler/scheduler.h"
+#include "devices/devices.h"
+
 
 
 /************** GLOBALI **************/
@@ -36,7 +27,7 @@ Sonar *ultrasonic;
 // ThermometerDHT11 *thermometer;
 ThermometerTMP36 *thermometer;
 
-
+Scheduler *scheduler;
 
 
 float distance_cm;
@@ -46,29 +37,15 @@ void setup() {
     droneState = DroneState::REST;
     testState = TestState::FULL_TEST;
 
-
     Serial.begin(9600);
-    Serial.println("0");
 
-    lcd = new Lcd(0x27, LCD_LEN, 2);
-
-    lcd->switchOn();
-    pir = new Pir(PIR);
-
-    redLed = new Led(LR);
-    greenLed1 = new Led(LG1);
-    greenLed1 = new Led(LG2);
-
-    thermometer = new ThermometerTMP36(TEMP);
-
-    ultrasonic = new Sonar(TRIG, ECHO);
-
-    myservo = new ServoMotorImpl(SERVO);
+    scheduler = new Scheduler(TICK_TIME);
 }
 
 /************** LOOP **************/
 void loop() {
-    switch (testState) { // TODO rifare
+    // scheduler->schedule(); //TODO Deve rimanere solo questo
+    switch (testState) { // TODO rifare e
     case TestState::FULL_TEST:
         int val = pir->isPresent();
 

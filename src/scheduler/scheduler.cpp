@@ -1,7 +1,6 @@
 #include "Scheduler.h"
 
-Scheduler::Scheduler(int basePeriod) {
-    this->basePeriod = (unsigned long) basePeriod; // TODO rivedere
+Scheduler::Scheduler(unsigned long basePeriod) : basePeriod(basePeriod) {
     nTasks = 0;
     lastRun = millis();
 }
@@ -16,11 +15,11 @@ bool Scheduler::addTask(Task* task) {
     }
 }
 
-void Scheduler::schedule(){   
+void Scheduler::schedule() {   
     unsigned long now = millis();
 
     // se non è ancora passato il periodo base, non facciamo nulla
-    if (now - lastRun < (unsigned long)basePeriod){
+    if (now - lastRun < basePeriod){
         return;
     }
 
