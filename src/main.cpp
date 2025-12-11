@@ -11,7 +11,7 @@
 //#include "devices/thermometer/thermometerDHT11.h"
 #include "devices/thermometer/thermometerTMP36.h"
 
-#include "states.h"
+#include "scheduler/states.h"
 
 
 /************** GLOBALI **************/
