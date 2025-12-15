@@ -1,3 +1,5 @@
+
+
 # Prerequisites
 *.d
 
@@ -48,8 +50,9 @@ pio.lock
 cmake-build-*/
 
 # VSCode
-.vscode/
+.vscode/*
 *.code-workspace
+!.vscode/launch.json
 
 # Arduino cache/temp
 *.eep

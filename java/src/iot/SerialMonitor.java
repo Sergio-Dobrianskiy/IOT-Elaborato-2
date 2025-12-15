@@ -23,7 +23,7 @@ public class SerialMonitor implements SerialPortEventListener {
 		    serialPort.addEventListener(this, SerialPort.MASK_RXCHAR);
 		}
 		catch (SerialPortException ex) {
-		    System.out.println("There are an error on writing string to port т: " + ex);
+		    System.out.println("There are an error on writing string to port T: " + ex);
 		}
 		
 		new UserInputReaderAgent(serialPort).start();
