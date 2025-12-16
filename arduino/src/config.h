@@ -22,4 +22,7 @@
 
 #define TICK_TIME 100
 
+#define DOOR_OPEN_ANGLE   90
+#define DOOR_CLOSED_ANGLE 0
+
 #endif
