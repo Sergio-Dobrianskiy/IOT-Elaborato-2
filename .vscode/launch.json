@@ -13,7 +13,21 @@
             "name": "DashboardLauncher",
             "request": "launch",
             "mainClass": "iot.drone_carrier.DashboardLauncher",
-            "projectName": "IOT-Elaborato-2_1e60a636"
+            "projectName": "DroneCarrier"
+        },
+        {
+            "type": "java",
+            "name": "DashboardLauncher",
+            "request": "launch",
+            "mainClass": "iot.drone_carrier.DashboardLauncher",
+            "projectName": "SmartWasteDisposal"
+        },
+        {
+            "type": "java",
+            "name": "Launch DroneCarrier",
+            "request": "launch",
+            "mainClass": "iot.drone_carrier.DashboardLauncher",
+            "projectName": "IOT-Elaborato-2"
         },
         {
             "type": "platformio-debug",
