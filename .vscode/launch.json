@@ -10,47 +10,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "iot.SimpleSerialMonitor",
+            "name": "DashboardLauncher",
             "request": "launch",
-            "mainClass": "iot.SimpleSerialMonitor",
+            "mainClass": "iot.drone_carrier.DashboardLauncher",
             "projectName": "IOT-Elaborato-2_1e60a636"
-        },
-        {
-            "type": "java",
-            "name": "iot.ShowSerialPorts",
-            "request": "launch",
-            "mainClass": "iot.ShowSerialPorts",
-            "projectName": "IOT-Elaborato-2_1e60a636"
-        },
-        {
-            "type": "java",
-            "name": "iot.SimpleSerialMonitor",
-            "request": "launch",
-            "mainClass": "iot.SimpleSerialMonitor",
-            "projectName": "TestSerial",
-            "args": [
-                "COM5"
-            ]
-        },
-        {
-            "type": "java",
-            "name": "iot.TestPingPong",
-            "request": "launch",
-            "mainClass": "iot.TestPingPong",
-            "projectName": "IOT-Elaborato-2_1e60a636",
-            "args": [
-                "COM5"
-            ]
-        },
-        {
-            "type": "java",
-            "name": "iot.TestRemoteBlinking",
-            "request": "launch",
-            "mainClass": "iot.TestRemoteBlinking",
-            "projectName": "TestSerial",
-            "args": [
-                "COM5"
-            ]
         },
         {
             "type": "platformio-debug",

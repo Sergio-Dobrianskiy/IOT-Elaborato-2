@@ -1,21 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-    <classpathentry kind="src" path="java/src"/>
-    <classpathentry kind="lib" path="java/lib/jssc-2.10.2.jar" sourcepath="java/lib/jssc-2.10.2-sources.jar">
-        <attributes>
-            <attribute name="javadoc_location" value="jar:platform:/resource/IOT-ELABORATO-2/java/lib/jssc-2.10.2-javadoc.jar!/"/>
-        </attributes>
-    </classpathentry>
-    <classpathentry kind="lib" path="java/lib/slf4j-api-2.0.17.jar" sourcepath="java/lib/slf4j-api-2.0.17-sources.jar">
-        <attributes>
-            <attribute name="javadoc_location" value="jar:platform:/resource/IOT-ELABORATO-2/java/lib/slf4j-api-2.0.17-javadoc.jar!/"/>
-        </attributes>
-    </classpathentry>
-    <classpathentry kind="lib" path="java/lib/slf4j-simple-2.0.17.jar">
-        <attributes>
-            <attribute name="javadoc_location" value="jar:platform:/resource/IOT-ELABORATO-2/java/lib/slf4j-simple-2.0.17-javadoc.jar!/"/>
-        </attributes>
-    </classpathentry>
-    
-    <classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jssc-2.10.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

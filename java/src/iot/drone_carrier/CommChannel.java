@@ -1,4 +1,4 @@
-package iot;
+package iot.drone_carrier;
 
 /**
  * Simple interface for an async msg communication channel
@@ -19,7 +19,7 @@ public interface CommChannel {
 	/**
 	 * To receive a message. 
 	 * 
-	 * Blocking behavior.
+	 * Blocking behaviour.
 	 */
 	String receiveMsg() throws InterruptedException;
 

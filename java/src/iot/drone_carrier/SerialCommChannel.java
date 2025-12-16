@@ -1,4 +1,4 @@
-package iot;
+package iot.drone_carrier;
 
 import java.util.concurrent.*;
 import jssc.*;
@@ -18,19 +18,23 @@ public class SerialCommChannel implements CommChannel, SerialPortEventListener {
 	public SerialCommChannel(String port, int rate) throws Exception {
 		queue = new ArrayBlockingQueue<String>(100);
 
-		serialPort = new SerialPort(port);
-		serialPort.openPort();
-
-		serialPort.setParams(rate,
-		                         SerialPort.DATABITS_8,
-		                         SerialPort.STOPBITS_1,
-		                         SerialPort.PARITY_NONE);
-
-		serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | 
-		                                  SerialPort.FLOWCONTROL_RTSCTS_OUT);
-
-		// serialPort.addEventListener(this, SerialPort.MASK_RXCHAR);
-		serialPort.addEventListener(this);
+		try {
+			serialPort = new SerialPort(port);
+			serialPort.openPort();
+	
+			serialPort.setParams(rate,
+			                         SerialPort.DATABITS_8,
+			                         SerialPort.STOPBITS_1,
+			                         SerialPort.PARITY_NONE);
+	
+			serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | 
+			                                  SerialPort.FLOWCONTROL_RTSCTS_OUT);
+	
+			// serialPort.addEventListener(this, SerialPort.MASK_RXCHAR);
+			serialPort.addEventListener(this);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	@Override
