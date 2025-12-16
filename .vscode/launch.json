@@ -38,7 +38,9 @@
             "request": "launch",
             "mainClass": "iot.TestPingPong",
             "projectName": "IOT-Elaborato-2_1e60a636",
-            "args": ["COM5"]
+            "args": [
+                "COM5"
+            ]
         },
         {
             "type": "java",
