@@ -52,7 +52,7 @@ cmake-build-*/
 # VSCode
 .vscode/*
 *.code-workspace
-!.vscode/launch.json
+!.vscode/launch.json.template
 
 # Arduino cache/temp
 *.eep

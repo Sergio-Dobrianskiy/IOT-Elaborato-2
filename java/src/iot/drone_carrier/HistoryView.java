@@ -1,29 +1,31 @@
 package iot.drone_carrier;
 
+import java.awt.BorderLayout;
 import java.util.Date;
 
 import javax.swing.*;
 
-class HistoryView extends JFrame  {
+/**
+ * History panel that shows an append-only log with timestamps.
+ * (Converted from JFrame to JPanel so it can be hosted inside the main window.)
+ */
+class HistoryView extends JPanel {
 
-	private JTextArea log;
+    private final JTextArea log;
 
-	public HistoryView(){
-		super("Log ");
-		setSize(600,600);
+    public HistoryView() {
+        super(new BorderLayout());
 
-		JPanel mainPanel = new JPanel();
-		log = new JTextArea(30,40);
-		log.setEditable(false);
-		JScrollPane scrol = new JScrollPane(log);
-		mainPanel.add(scrol);
-		this.getContentPane().add(mainPanel);
-	}
+        log = new JTextArea(30, 40);
+        log.setEditable(false);
 
-	public void log(String msg){
-		SwingUtilities.invokeLater(() -> {
-			String date = new Date().toString();
-			log.append("["+date+"] "+ msg +"\n");
-		});
-	}
+        add(new JScrollPane(log), BorderLayout.CENTER);
+    }
+
+    public void log(String msg) {
+        SwingUtilities.invokeLater(() -> {
+            String date = new Date().toString();
+            log.append("[" + date + "] " + msg + "\n");
+        });
+    }
 }

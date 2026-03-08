@@ -3,11 +3,8 @@
 
 #include "Arduino.h"
 
-
 class LoggerService {
-    
-public: 
-    
+public:
     void log(const String& msg);
 };
 

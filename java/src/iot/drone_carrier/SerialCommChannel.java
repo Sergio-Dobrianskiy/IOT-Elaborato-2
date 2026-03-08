@@ -3,12 +3,6 @@ package iot.drone_carrier;
 import java.util.concurrent.*;
 import jssc.*;
 
-/**
- * Comm channel implementation based on serial port.
- * 
- * @author aricci
- *
- */
 public class SerialCommChannel implements CommChannel, SerialPortEventListener {
 
 	private SerialPort serialPort;
@@ -55,13 +49,11 @@ public class SerialCommChannel implements CommChannel, SerialPortEventListener {
 
 	@Override
 	public String receiveMsg() throws InterruptedException {
-		// TODO Auto-generated method stub
 		return queue.take();
 	}
 
 	@Override
 	public boolean isMsgAvailable() {
-		// TODO Auto-generated method stub
 		return !queue.isEmpty();
 	}
 

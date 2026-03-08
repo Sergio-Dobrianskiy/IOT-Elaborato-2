@@ -1,224 +1,167 @@
-// #include "HWPlatform.h"
+#include "HWPlatform.h"
+#include <Arduino.h>
+#include "devices/button/ButtonImpl.h"
+#include "devices/led/Led.h"
+#include "devices/pir/Pir.h"
+#include "devices/proximity_sensor/Sonar.h"
+#include "devices/servo_motor/servo_motor_impl.h"
+#include "devices/temperature_sensor/TemperatureSensorDHT11.h"
 
-// #include "devices/button/ButtonImpl.h"
-// #include "devices/led/Led.h"
-// #include "devices/pir/Pir.h"
-// #include "devices/proxymitySensor/sonar.h"
-// #include "devices/thermometer/thermometerDHT11.h"
-// #include "devices/servoMotor/servoMotorImpl.h"
+void wakeUp() {}
 
-// HWPlatform::HWPlatform()
-//     :   pDdd(nullptr),
-//         pDpd(nullptr),
-//         pDoorMotor(nullptr),
-//         pTempSensor(nullptr),
-//         pLcd(nullptr),
-//         pL1(nullptr),
-//         pL2(nullptr),
-//         pL3(nullptr),
-//         pResetButton(nullptr) {
-// }
+HWPlatform::HWPlatform() {
+    pDdd = new Sonar(SONAR_ECHO_PIN, SONAR_TRIG_PIN, MAX_TIME_US);
+    pDpd = new Pir(PIR_PIN);
+    pDoorMotor = new ServoMotorImpl(SERVO_PIN);
+    pTempSensor = new TempSensorDHT11(TEMP_PIN);
+    pLcd = new LiquidCrystal_I2C(LCD_ADDR, 16, 2);
+    pL1 = new Led(L1_PIN);
+    pL2 = new Led(L2_PIN);
+    pL3 = new Led(L3_PIN);
+    pResetButton = new ButtonImpl(BUTTON_PIN);
+    Serial.println("HWPlatform istanziata");
+}
 
-// void HWPlatform::init() {
-//     // --- crea i sensori / attuatori usando i pin da config.h ---
+void HWPlatform::init() {
+    pLcd->init();
+    pLcd->backlight();
+    Serial.println("HWPlatform inizializzata");
+}
 
-//     // Sonar per distanza del drone (DDD)
-//     pDdd = new Sonar(ECHO, TRIG, MAX_TIME_US); 
-//     // se non hai DDD_MAX_TIME_US, puoi definirlo in config.h (es. 30000L)
+ButtonImpl* HWPlatform::getResetButton() {
+    return this->pResetButton;
+}
 
-//     // PIR per presenza drone (DPD)
-//     pDpd = new Pir(PIR_PIN);
+Led* HWPlatform::getL1() {
+    return this->pL1;
+}
 
-//     // Servo porta hangar
-//     pDoorMotor = new ServoMotorImpl(SERVO_PIN);
-//     pDoorMotor->on();    // attacca subito il servo
+Led* HWPlatform::getL2() {
+    return this->pL2;
+}
 
-//     // Sensore temperatura (DHT11) dietro interfaccia TempSensor
-//     pTempSensor = new TempSensorDHT11(TEMP_PIN);
+Led* HWPlatform::getL3() {
+    return this->pL3;
+}
 
-//     // LCD I2C operatore
-//     pLcd = new LiquidCrystal_I2C(LCD_ADDR, 16, 2);
-//     pLcd->init();
-//     pLcd->backlight();
-//     pLcd->clear();
-//     pLcd->setCursor(0, 0);
-//     pLcd->print("DRONE INSIDE");   // stato iniziale richiesto
+LiquidCrystal_I2C* HWPlatform::getLcd() {
+    return this->pLcd;
+}
 
-//     // LED
-//     pL1 = new Led(L1_PIN);
-//     pL2 = new Led(L2_PIN);
-//     pL3 = new Led(L3_PIN);
+TempSensor* HWPlatform::getTempSensor() {
+    return this->pTempSensor;
+}
 
-//     // Assicuriamoci che all'inizio siano nello stato di default
-//     pL1->switchOn();     // ad esempio "sistema acceso"
-//     pL2->switchOff();
-//     pL3->switchOff();
+ServoMotor* HWPlatform::getHangarDoorMotor() {
+    return this->pDoorMotor;
+}
 
-//     // Bottone reset allarme
-//     pResetButton = new ButtonImpl(BUTTON_PIN);
-// }
+Sonar* HWPlatform::getDDD() {
+    return this->pDdd;
+}
 
-// /*
+Pir* HWPlatform::getDPD() {
+    return this->pDpd;
+}
 
-// In HWPlatform::test() scrivo tutte le prove:
+void HWPlatform::test() {
+    // --- static state (persists between calls) ---
+    static bool doorOpen = false;
 
-// muovi il servo,
+    static unsigned long lastBlink = 0;
+    static bool l2State = false;
 
-// leggi sonar e stampi sul seriale,
+    static unsigned long lastPrint = 0;
+    static bool prevPressed = false;
 
-// accendi/spegni led,
+    unsigned long now = millis();
 
-// scrivi qualcosa sull’LCD,
+    /* --------- 1) Blink L2 every 500 ms --------- */
+    if (now - lastBlink >= 500) {
+        lastBlink = now;
+        l2State = !l2State;
 
-// ecc.
+        if (pL2) {
+            if (l2State) {
+                pL2->switchOn();
+            } else {
+                pL2->switchOff();
+            }
+        }
+    }
 
-// Registri questo task nello Scheduler con un certo periodo (es. 100 ms).
+    /* --------- 2) Read sensors every 1 s --------- */
+    if (now - lastPrint >= 1000) {
+        lastPrint = now;
 
-// Finché il task è attivo, chiamerà continuamente pHW->test() e tu vedi se tutto funziona.
+        // Sonar (DDD)
+        float d = 0.0f;
+        if (pDdd) {
+            d = pDdd->getDistance();  // in meters
+        }
 
-// */
+        // PIR (DPD)
+        bool above = false;
+        if (pDpd) {
+            above = pDpd->isDetected();
+        }
 
-// #include <Arduino.h>
-// #include "HWPlatform.h"
+        // Temperature (DHT11)
+        float t = 0.0f;
+        if (pTempSensor) {
+            t = pTempSensor->getTemperature();
+        }
 
-// void HWPlatform::test() {
-//   // --- static state (persists between calls) ---
-//     static bool doorOpen = false;
+        Serial.print("Distance: ");
+        Serial.print(d);
+        Serial.print(" m  |  Drone above (PIR): ");
+        Serial.print(above ? "YES" : "NO");
+        Serial.print("  |  Temp: ");
+        Serial.print(t);
+        Serial.println(" C");
 
-//     static unsigned long lastBlink = 0;
-//     static bool l2State = false;
+        // Show something on LCD (second row)
+        if (pLcd) {
+            pLcd->setCursor(0, 1);
+            pLcd->print("D:");
+            pLcd->print(d, 2);
+            pLcd->print("m T:");
+            pLcd->print(t, 1);
+            pLcd->print("C ");
+        }
+    }
 
-//     static unsigned long lastPrint = 0;
-//     static bool prevPressed = false;
+    /* --------- 3) RESET button → toggle door --------- */
+    bool pressed = false;
+    if (pResetButton) {
+        // adapt to your real button method if different
+        pressed = pResetButton->isPressed();
+    }
 
-//     unsigned long now = millis();
+    // rising edge: not pressed -> pressed
+    if (pressed && !prevPressed) {
+        doorOpen = !doorOpen;
 
-//     /* --------- 1) Blink L2 every 500 ms --------- */
-//     if (now - lastBlink >= 500) {
-//         lastBlink = now;
-//         l2State = !l2State;
+        if (doorOpen) {
+            Serial.println(">> Opening door");
+            if (pDoorMotor) {
+                pDoorMotor->setPosition(90);  // open (adjust angle if needed)
+            }
+            if (pL3) {
+                pL3->switchOn();  // e.g. red LED ON when door open
+            }
+        } else {
+            Serial.println(">> Closing door");
+            if (pDoorMotor) {
+                pDoorMotor->setPosition(0);  // close
+            }
+            if (pL3) {
+                pL3->switchOff();
+            }
+        }
+    }
+    prevPressed = pressed;
 
-//         if (pL2) {
-//         if (l2State) {
-//             pL2->switchOn();
-//         } else {
-//             pL2->switchOff();
-//         }
-//         }
-//     }
-
-//   /* --------- 2) Read sensors every 1 s --------- */
-//     if (now - lastPrint >= 1000) {
-//         lastPrint = now;
-
-//         // Sonar (DDD)
-//         float d = 0.0f;
-//         if (pDdd) {
-//         d = pDdd->getDistance();   // in meters (adjust if your API is different)
-//         }
-
-//         // PIR (DPD)
-//         bool above = false;
-//         if (pDpd) {
-//         // adapt this to your real method name if needed
-//             above = pDpd->isDetected();
-//         }
-
-//         // Temperature (DHT11)
-//         float t = 0.0f;
-//         if (pTempSensor) {
-//             t = pTempSensor->getTemperature();
-//         }
-
-//         Serial.print("Distance: ");
-//         Serial.print(d);
-//         Serial.print(" m  |  Drone above (PIR): ");
-//         Serial.print(above ? "YES" : "NO");
-//         Serial.print("  |  Temp: ");
-//         Serial.print(t);
-//         Serial.println(" C");
-
-//         // Show something on LCD (second row)
-//         if (pLcd) {
-//         pLcd->setCursor(0, 1);  // second row
-//         pLcd->print("D:");
-//         pLcd->print(d, 2);
-//         pLcd->print("m T:");
-//         pLcd->print(t, 1);
-//         pLcd->print("C ");
-//         }
-//     }
-
-//   /* --------- 3) RESET button → toggle door --------- */
-//     bool pressed = false;
-//     if (pResetButton) {
-//         // adapt to your real button method if different
-//         pressed = pResetButton->isPressed();
-//     }
-
-//     // rising edge: not pressed -> pressed
-//     if (pressed && !prevPressed) {
-//         doorOpen = !doorOpen;
-
-//         if (doorOpen) {
-//         Serial.println(">> Opening door");
-//         if (pDoorMotor) {
-//             pDoorMotor->setPosition(90);   // open (adjust angle if needed)
-//         }
-//         if (pL3) {
-//             pL3->switchOn();               // e.g. red LED ON when door open
-//         }
-//         } else {
-//         Serial.println(">> Closing door");
-//         if (pDoorMotor) {
-//             pDoorMotor->setPosition(0);    // close
-//         }
-//         if (pL3) {
-//             pL3->switchOff();
-//         }
-//         }
-//     }
-//     prevPressed = pressed;
-
-//   // small delay so we don't hammer the CPU too hard
-//     delay(5);
-// }
-
-
-// // --- getters ---
-
-// Sonar* HWPlatform::getDDD() {
-//     return pDdd;
-// }
-
-// Pir* HWPlatform::getDPD() {
-//     return pDpd;
-// }
-
-// ServoMotor* HWPlatform::getHangarDoorMotor() {
-//     return pDoorMotor;
-// }
-
-// TempSensor* HWPlatform::getTempSensor() {
-//     return pTempSensor;
-// }
-
-// LiquidCrystal_I2C* HWPlatform::getOperatorLcd() {
-//     return pLcd;
-// }
-
-// Led* HWPlatform::getL1() {
-//     return pL1;
-// }
-
-// Led* HWPlatform::getL2() {
-//     return pL2;
-// }
-
-// Led* HWPlatform::getL3() {
-//     return pL3;
-// }
-
-// Button* HWPlatform::getResetButton() {
-//     return pResetButton;
-// }
+    // small delay so we don't hammer the CPU too hard
+    delay(5);
+}

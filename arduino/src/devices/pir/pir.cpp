@@ -1,11 +1,28 @@
+#include "Pir.h"
 #include "Arduino.h"
-#include "pir.h"
 
-Pir::Pir(uint8_t pin) : pin(pin) {
+Pir::Pir(int pin) {
+    this->pin = pin;
     pinMode(pin, INPUT);
-};
+}
 
-// ritorna true se rileva un oggetto
-bool Pir::isPresent() {
-    return digitalRead(pin) == HIGH;
+void Pir::sync() {
+    detected = digitalRead(pin) == HIGH;
+    updateSyncTime(millis());
+}
+
+bool Pir::isDetected() {
+    return detected;
+}
+
+void Pir::calibrate() {
+    delay(10000);
+}
+
+void Pir::updateSyncTime(long time) {
+    lastTimeSync = time;
+}
+
+long Pir::getLastSyncTime() {
+    return lastTimeSync;
 }

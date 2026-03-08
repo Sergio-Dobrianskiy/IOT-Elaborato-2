@@ -1,118 +1,221 @@
 #include "Arduino.h"
 
 #include "Hangar.h"
-#include "config.h"   // per eventuali angoli porta ecc.
+#include "config.h"
+#include "kernel/Logger.h"
 
-#define NO_OBJ_DETECTED 0 // TODO rivedere
-
+bool SVILUPPO = true;
 
 Hangar::Hangar(HWPlatform* hw)
-    :   hw(hw),
-        droneState(DroneState::REST),
-        hangarState(HangarState::NORMAL),
-        droneInside(true),   // da specifica: stato iniziale = dentro
-        doorOpen(false) {
-}
+    : pHW(hw),
+      droneState(DroneState::REST),
+      hangarState(HangarState::NORMAL),
+      pResetButton(pHW->getResetButton()) {}
 
 void Hangar::init() {
-    // stato iniziale richiesto:
-    // - porta chiusa
-    // - drone dentro
-    // - hangar normale
+    L1isOn = false;
+    L2isBlinking = false;
+    L3isOn = false;
 
-    closeDoor();                   // chiude fisicamente la porta
-    droneInside = true;
+    alarmRaised = false;
+
+    pHW->getHangarDoorMotor()->motorOn();
+    doorOpen = true;  // serve per far funzionare la prima volta closeDoor();
+    closeDoor();
+    if (SVILUPPO) {
+        Serial.println("Door and Led TEST");
+
+        pHW->getL1()->switchOn();
+        pHW->getL2()->switchOn();
+        pHW->getL3()->switchOn();
+
+        delay(1000);
+
+        openDoor();
+
+        delay(1000);
+
+        closeDoor();
+        pHW->getL1()->switchOff();
+        pHW->getL2()->switchOff();
+        pHW->getL3()->switchOff();
+    }
+    Serial.println("Door is READY");
+    L1isOn = true;
     droneState = DroneState::REST;
     hangarState = HangarState::NORMAL;
 }
 
 /* --------- Stato drone --------- */
 
-void Hangar::setDroneState(DroneState s) {
-    droneState = s;
+void Hangar::setDroneState(DroneState state) {
+    this->droneState = state;
 }
 
-DroneState Hangar::getDroneState() const {
-    return droneState;
-}
-
-void Hangar::setDroneInside(bool inside) {
-    droneInside = inside;
-}
-
-bool Hangar::isDroneInside() const {
-    return droneInside;
+DroneState Hangar::getDroneState() {
+    return this->droneState;
 }
 
 /* --------- Porta hangar --------- */
 
 void Hangar::openDoor() {
-    auto motor = hw->getHangarDoorMotor();
+    auto motor = pHW->getHangarDoorMotor();
     if (motor && !doorOpen) {
-        motor->setAngle(DOOR_OPEN_ANGLE);  // es. 90°
+        motor->setPosition(DOOR_OPEN_ANGLE);
         doorOpen = true;
+    } else {
+        Serial.println("NO MOTOR");
     }
 }
 
 void Hangar::closeDoor() {
-    auto motor = hw->getHangarDoorMotor();
+    auto motor = pHW->getHangarDoorMotor();
     if (motor && doorOpen) {
-        motor->setAngle(DOOR_CLOSED_ANGLE);  // es. 0°
+        motor->setPosition(DOOR_CLOSED_ANGLE);
         doorOpen = false;
+    } else {
+        Serial.println("NO MOTOR");
     }
 }
 
-bool Hangar::isDoorOpen() const {
+bool Hangar::isDoorOpen() {
     return doorOpen;
 }
 
 /* --------- Letture sensori --------- */
 
 float Hangar::getDistance() {
-    auto sonar = hw->getDDD();
+    auto sonar = pHW->getDDD();
     if (!sonar) {
-        return NO_OBJ_DETECTED;
+        return SONAR_NO_OBJ_DETECTED;
     }
-    return sonar->getDistanceCm();
+    return sonar->getDistance();
 }
 
 bool Hangar::isDroneAbove() {
-    auto pir = hw->getDPD();
+    auto pir = pHW->getDPD();
     if (!pir) {
         return false;
     }
-    // adatta al nome del metodo reale del tuo Pir
-    return pir->isPresent();   // oppure pir->isPresent(), pir->isMotionDetected()...
+    pir->sync();
+    return pir->isDetected();
 }
 
 float Hangar::getTemperature() {
-    auto ts = hw->getTempSensor();
-    if (!ts) {
+    auto temperatureSensor = pHW->getTempSensor();
+    if (!temperatureSensor) {
         return NAN;
     }
-    return ts->getTemperatureC();
+    return temperatureSensor->getTemperature();
 }
 
 /* --------- Stato hangar / allarmi --------- */
 
-void Hangar::setHangarState(HangarState s) {
-    hangarState = s;
+void Hangar::setHangarState(HangarState state) {
+    this->hangarState = state;
 }
 
-HangarState Hangar::getHangarState() const {
-    return hangarState;
+HangarState Hangar::getHangarState() {
+    return this->hangarState;
 }
 
+void Hangar::setL1On() {
+    this->L1isOn = true;
+}
+void Hangar::setL2Blinking() {
+    this->L2isBlinking = true;
+}
+void Hangar::setL3On() {
+    this->L3isOn = true;
+}
 
-void Hangar::sync(){
-    float dist = lastDistance; 
-    currentTemp = lastTemperature;
-    
-    currentTemp = hw->getTempSensor()->getTemperatureC();
-    dist = hw->getDDD()->getDistanceCm();
-    if (dist == NO_OBJ_DETECTED){
-    dist = 1000; // TODO: cambia
+void Hangar::setL1Off() {
+    this->L1isOn = false;
+}
+void Hangar::setL2Off() {
+    this->L2isBlinking = false;
+}
+void Hangar::setL3Off() {
+    this->L3isOn = false;
+}
+
+void Hangar::raiseAlarm() {
+    this->alarmRaised = true;
+}
+
+void Hangar::resetAlarm() {
+    this->alarmRaised = false;
+}
+
+void Hangar::manageAlarm() {
+    if (alarmRaised && droneState != DroneState::TAKING_OFF && droneState != DroneState::LANDING &&
+        droneState != DroneState::WAITING) {
+        hangarState = HangarState::ALARM;
+    } else {
+        hangarState = HangarState::NORMAL;
     }
-    lastDistance = dist; 
-    lastTemperature = currentTemp; 
+}
+
+void Hangar::manageLeds() {
+    // Led1 Verde
+    if (L1isOn) {
+        pHW->getL1()->switchOn();
+    } else {
+        pHW->getL1()->switchOff();
+    }
+
+    // Led2 Verde
+    if (droneState == DroneState::TAKING_OFF || droneState == DroneState::LANDING) {
+        pHW->getL2()->blink(L2_BLINK_PERIOD);
+    } else {
+        pHW->getL2()->stopBlinking();
+    }
+
+    // Led3 Rosso
+    if (hangarState == HangarState::ALARM) {
+        pHW->getL3()->switchOn();
+    } else {
+        pHW->getL3()->switchOff();
+    }
+}
+
+void Hangar::manageDoor() {
+    switch (doorState) {
+        case DoorState::OPEN:
+            Logger.log(F("[DO] Door is Open"));
+            break;
+        case DoorState::OPENING:
+            this->openDoor();
+            Logger.log(F("[DO] opening door"));
+            break;
+        case DoorState::CLOSED:
+            Logger.log(F("[DO] Door is Closed"));
+            break;
+        case DoorState::CLOSING:
+            this->closeDoor();
+            Logger.log(F("[DO] closing door"));
+            break;
+
+        default:
+            break;
+    }
+}
+
+ButtonImpl* Hangar::getResetButton() {
+    //  return this->pHW->getResetButton();
+    return this->pResetButton;
+}
+
+void Hangar::setDoorState(DoorState state) {
+    this->doorState = state;
+    this->manageDoor();
+}
+
+DoorState Hangar::getDoorState() {
+    return this->doorState;
+}
+
+void Hangar::sync() {
+    manageAlarm();
+    manageLeds();
 }

@@ -30,10 +30,29 @@
             "projectName": "IOT-Elaborato-2"
         },
         {
+            "name": "C/C++ Runner: Debug Session",
+            "type": "cppdbg",
+            "request": "launch",
+            "args": [],
+            "stopAtEntry": false,
+            "externalConsole": true,
+            "cwd": ".",
+            "program": "build/Debug/outDebug",
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/Users/veram/.platformio/packages/toolchain-atmelavr/bin/avr-gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "C:/Users/Sergio/Documents/Arduino/IOT-Elaborato-2/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/Sergio/Documents/Arduino/Assignment-02-Drone-Hangar/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/Sergio/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart",
@@ -46,7 +65,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "C:/Users/Sergio/Documents/Arduino/IOT-Elaborato-2/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/Sergio/Documents/Arduino/Assignment-02-Drone-Hangar/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/Sergio/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
@@ -55,7 +74,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "C:/Users/Sergio/Documents/Arduino/IOT-Elaborato-2/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/Sergio/Documents/Arduino/Assignment-02-Drone-Hangar/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
             "toolchainBinDir": "C:/Users/Sergio/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart",

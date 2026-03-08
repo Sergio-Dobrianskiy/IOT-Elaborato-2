@@ -1,16 +1,19 @@
-#ifndef __BUTTONIMPL__
-#define __BUTTONIMPL__
+#ifndef __BUTTON_IMPL__
+#define __BUTTON_IMPL__
 
-#include "Arduino.h"
-#include "button.h"
+#include "Button.h"
 
 class ButtonImpl : public Button {
 public:
-    ButtonImpl(uint8_t pin);
-    virtual bool isPressed() override;
+    ButtonImpl(int pin);
+    bool isPressed() override;
+    bool isClicked() override;
+    void sync() override;
 
-protected:
-    uint8_t pin;
+private:
+    int pin;
+    bool pressed;
+    bool clicked;
 };
 
 #endif

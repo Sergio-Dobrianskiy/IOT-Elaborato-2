@@ -3,16 +3,29 @@
 
 #include "HWPlatform.h"
 
-// Pannello utente locale dell'hangar.
-// Al momento gestisce solo il bottone di RESET ALLARME.
+/*
+ * Classe per la gestione dell'interfaccia utente. Gestisce:
+ * - Reset button
+ * - Schermo LCD
+ */
 class UserPanel {
-
 public:
     // pHW è la piattaforma hardware da cui prendiamo il Button di reset
     UserPanel(HWPlatform* pHW);
 
     // inizializzazione logica (reset degli stati interni)
     void init();
+    // metodi LCD
+    void turnOnDisplay();
+    void turnOffDisplay();
+    void displayDroneInside();
+    void displayTakeOff();
+    void displayWaitingDoor();
+    void displayDroneOut();
+    void displayLanding();
+    void displayAlarm();
+    void prepareToSleep();
+    void resumeFromSleeping();
 
     // Legge lo stato fisico del bottone e aggiorna le variabili interne.
     // Va chiamata periodicamente (es. ad ogni tick di un Task).
@@ -28,9 +41,10 @@ public:
 private:
     HWPlatform* pHW;
     Button* pResetButton;
+    LiquidCrystal_I2C* pLcd;
 
-    bool resetPressed;       // stato attuale
-    bool prevResetPressed;   // stato al tick precedente
+    bool resetPressed;      // stato attuale
+    bool prevResetPressed;  // stato al tick precedente
 };
 
 #endif
